@@ -47,6 +47,12 @@ components:
   - name: venv
     volume:
       size: 1G
+  - name: remote-endpoint
+    volume:
+      size: 256Mi
+  - name: plugins
+    volume:
+      size: 256Mi
 commands:
   - exec:
       commandLine: python -m venv .venv && . .venv/bin/activate && python hello-world.py
