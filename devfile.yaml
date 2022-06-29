@@ -4,6 +4,11 @@ metadata:
   namespace: admin-devspaces
 projects:
   - name: python-tilt
+    git:
+      remotes:
+        origin: "https://github.com/lematthe/tilt-example-python.git"
+      checkoutFrom:
+        revision: master
 components:
   - attributes:
       app.kubernetes.io/name: python
