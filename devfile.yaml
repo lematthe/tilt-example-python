@@ -1,49 +1,51 @@
-schemaVersion: 2.2.0
+
+schemaVersion: 2.1.0
 metadata:
   name: python
-  projectType: python
-  language: python
   version: 1.0.0
-  provider: Red Hat
-  supportUrl: https://github.com/devfile-samples/devfile-support#support-information
-  attributes:
-    alpha.dockerimage-port: 8081
-parent:
-  id: python
-  registryUrl: "https://registry.devfile.io"
+  displayName: Python
+  description: Python Stack with Python 3.7
+  icon: https://raw.githubusercontent.com/devfile-samples/devfile-stack-icons/main/python.svg
+  tags: ['Python', 'pip']
+  projectType: 'python'
+  language: 'python'
+starterProjects:
+  - name: python-example
+    git:
+      remotes:
+        origin: https://github.com/devfile-samples/python-ex
 components:
-  - name: outerloop-build
-    image:
-      imageName: python-image:latest
-      dockerfile:
-        uri: docker/Dockerfile
-        buildContext: .
-        rootRequired: false
-  - name: outerloop-deploy
-    attributes:
-      deployment/replicas: 1
-      deployment/route: route1
-      deployment/storageLimit: 400Mi
-      deployment/storageRequest: 200Mi
-      deployment/cpuLimit: "2"
-      deployment/cpuRequest: 700m
-      deployment/memoryLimit: 500Mi
-      deployment/memoryRequest: 400Mi
-      deployment/container-port: 8081
-    kubernetes:
-      uri: outerloop-deploy.yaml
+  - name: py-web
+    container:
+      image: registry.access.redhat.com/ubi9/python-39:latest
+      mountSources: true
+      endpoints:
+        - name: web
+          targetPort: 8080
+      env:
+        - name: DEBUG_PORT
+          value: '5858'
 commands:
-  - id: build-image
-    apply:
-      component: outerloop-build
-  - id: deployk8s
-    apply:
-      component: outerloop-deploy
-  - id: deploy
-    composite:
-      commands:
-        - build-image
-        - deployk8s
+  - id: pip-install-requirements
+    exec:
+      commandLine: pip install -r requirements.txt
+      workingDir: ${PROJECT_SOURCE}
       group:
-        kind: deploy
+        kind: build
         isDefault: true
+      component: py-web
+  - id: run-app
+    exec:
+      commandLine: 'python app.py'
+      workingDir: ${PROJECT_SOURCE}
+      component: py-web
+      group:
+        kind: run
+        isDefault: true
+  - id: debugpy
+    exec:
+      commandLine: 'pip install --user debugpy && python -m debugpy --listen 0.0.0.0:${DEBUG_PORT} app.py'
+      workingDir: ${PROJECT_SOURCE}
+      component: py-web
+      group:
+        kind: debug
